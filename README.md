@@ -1,5 +1,7 @@
 # GoMOCKA
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/hawry/gomocka)](https://goreportcard.com/report/github.com/hawry/gomocka) [![GoDoc](https://godoc.org/github.com/Hawry/gomocka?status.svg)](https://godoc.org/github.com/Hawry/gomocka)
+
 A very lightweight and simple mocking service. The idea is that a JSON file configures possible endpoints, and the service is either run locally or in a docker container.
 
 <!-- TOC depthFrom:2 -->

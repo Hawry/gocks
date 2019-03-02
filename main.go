@@ -100,7 +100,3 @@ func initLogging() {
 	}
 	log.Printf("debug: enable verbose logging")
 }
-
-func doStuff() {
-	log.Printf("this is only here to test cover report")
-}
