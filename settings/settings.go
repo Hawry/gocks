@@ -48,8 +48,6 @@ func New(f *os.File) (s *Settings, err error) {
 	if err != nil {
 		return
 	}
-	log.Printf("%s", b)
-
 	if strings.HasSuffix(f.Name(), ".yaml") || strings.HasSuffix(f.Name(), ".yml") {
 		err = yaml.Unmarshal(b, &s)
 	} else {
