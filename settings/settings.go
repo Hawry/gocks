@@ -6,7 +6,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
+	"github.com/ghodss/yaml"
 	"github.com/hawry/gomocka/jwt"
 )
 
@@ -17,27 +19,27 @@ const (
 
 //Settings describe the settings.json file contents
 type Settings struct {
-	ListenPort    int      `json:"port"`
-	Authorization AuthData `json:"authorization,omitempty"`
-	Mocks         []Mock   `json:"mocks"`
+	ListenPort    int      `json:"port" yaml:"port"`
+	Authorization AuthData `json:"authorization,omitempty" yaml:"authorization,omitempty"`
+	Mocks         []Mock   `json:"mocks" yaml:"mocks"`
 }
 
 // AuthData describes the possible authorization headers required
 type AuthData struct {
-	Basic  BasicAuth         `json:"basic_auth"`
-	Header map[string]string `json:"header"`
-	OpenID OpenIDAuth        `json:"openid"`
+	Basic  BasicAuth         `json:"basic_auth" yaml:"basic_auth"`
+	Header map[string]string `json:"header" yaml:"header"`
+	OpenID OpenIDAuth        `json:"openid" yaml:"openid"`
 }
 
 //BasicAuth contains username/password field in settings file
 type BasicAuth struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" yaml:"username"`
+	Password string `json:"password" yaml:"password"`
 }
 
 //OpenIDAuth contains an endpoint to JWKS keys
 type OpenIDAuth struct {
-	JWKSEndpoint string `json:"jwks"`
+	JWKSEndpoint string `json:"jwks" yaml:"jwks"`
 }
 
 //New returns a new configuration from the given file
@@ -46,8 +48,13 @@ func New(f *os.File) (s *Settings, err error) {
 	if err != nil {
 		return
 	}
+	log.Printf("%s", b)
 
-	err = json.Unmarshal(b, &s)
+	if strings.HasSuffix(f.Name(), ".yaml") || strings.HasSuffix(f.Name(), ".yml") {
+		err = yaml.Unmarshal(b, &s)
+	} else {
+		err = json.Unmarshal(b, &s)
+	}
 	return
 }
 
@@ -76,6 +83,9 @@ func (s *Settings) VerifyHeaderAuth(h http.Header) bool {
 
 //VerifyOpenIDAuth returns true if the given bearer token have been signed with the specified key(s)
 func (s *Settings) VerifyOpenIDAuth(h http.Header) bool {
+	if !(len(s.Authorization.OpenID.JWKSEndpoint) > 0) {
+		return false
+	}
 	err := jwt.VerifyToken(h.Get("Authorization"), s.Authorization.OpenID.JWKSEndpoint)
 	if err != nil {
 		log.Printf("debug: %v", err)
