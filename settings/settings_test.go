@@ -49,12 +49,18 @@ func TestRequireAuthentication_BasicAuth(t *testing.T) {
 	if !sut.RequireAuthentication() {
 		t.Fail()
 	}
+	if actual := sut.hasBasicAuthEnabled(); !actual {
+		t.Errorf("expected %t, got %t", true, actual)
+	}
 }
 
 func TestRequireAuthentication_HeaderAuth(t *testing.T) {
 	sut := toStruct(settingsWithHeaderAuth)
 	if !sut.RequireAuthentication() {
 		t.Fail()
+	}
+	if actual := sut.hasHeaderAuthEnabled(); !actual {
+		t.Errorf("expected %t, got %t", true, actual)
 	}
 }
 
@@ -69,6 +75,9 @@ func TestRequireAuthentication_OpenIDAuth(t *testing.T) {
 	sut := toStruct(settingsWithOpenIDAuth)
 	if !sut.RequireAuthentication() {
 		t.Fail()
+	}
+	if actual := sut.hasOpenIDAuthEnabled(); !actual {
+		t.Errorf("expected %t, got %t", true, actual)
 	}
 }
 

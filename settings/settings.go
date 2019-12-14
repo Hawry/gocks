@@ -66,11 +66,17 @@ func (s *Settings) Port() int {
 
 //VerifyBasicAuth returns true if username & password matches the settings file
 func (s *Settings) VerifyBasicAuth(username, password string) bool {
+	if !s.hasBasicAuthEnabled() {
+		return false
+	}
 	return (s.Authorization.Basic.Username == username && s.Authorization.Basic.Password == password)
 }
 
 //VerifyHeaderAuth returns true if the specified header has the correct value in the request
 func (s *Settings) VerifyHeaderAuth(h http.Header) bool {
+	if !s.hasHeaderAuthEnabled() {
+		return false
+	}
 	for k, v := range s.Authorization.Header {
 		if h.Get(k) == v {
 			return true
@@ -81,12 +87,12 @@ func (s *Settings) VerifyHeaderAuth(h http.Header) bool {
 
 //VerifyOpenIDAuth returns true if the given bearer token have been signed with the specified key(s)
 func (s *Settings) VerifyOpenIDAuth(h http.Header) bool {
-	if !(len(s.Authorization.OpenID.JWKSEndpoint) > 0) {
+	if !s.hasOpenIDAuthEnabled() {
 		return false
 	}
 	err := jwt.VerifyToken(h.Get("Authorization"), s.Authorization.OpenID.JWKSEndpoint)
 	if err != nil {
-		log.Printf("debug: %v", err)
+		log.Printf("warn: %v", err)
 		return false
 	}
 	return true
@@ -94,7 +100,19 @@ func (s *Settings) VerifyOpenIDAuth(h http.Header) bool {
 
 //RequireAuthentication returns true if the settings require authentication to be provided, or false if not
 func (s *Settings) RequireAuthentication() bool {
-	return (len(s.Authorization.Basic.Password) > 0 && len(s.Authorization.Basic.Username) > 0) || (len(s.Authorization.Header) > 0) || (len(s.Authorization.OpenID.JWKSEndpoint) > 0)
+	return s.hasBasicAuthEnabled() || s.hasHeaderAuthEnabled() || s.hasOpenIDAuthEnabled()
+}
+
+func (s *Settings) hasBasicAuthEnabled() bool {
+	return (len(s.Authorization.Basic.Password) > 0 && len(s.Authorization.Basic.Username) > 0)
+}
+
+func (s *Settings) hasHeaderAuthEnabled() bool {
+	return (len(s.Authorization.Header) > 0)
+}
+
+func (s *Settings) hasOpenIDAuthEnabled() bool {
+	return (len(s.Authorization.OpenID.JWKSEndpoint) > 0)
 }
 
 //CreateDefault creates a default configuration and returns the struct representation as well, default filename is example.json
@@ -120,6 +138,13 @@ func CreateDefault() (*Settings, error) {
 				Method:       "GET",
 				ResponseBody: "{\"user\":\"{userid}\"}",
 				ResponseCode: 200,
+			},
+			Mock{
+				Path:         "/health",
+				Method:       "GET",
+				ResponseBody: "{\"status\": \"OK\"}",
+				ResponseCode: 200,
+				DisableAuth:  true,
 			},
 		},
 	}

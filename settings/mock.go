@@ -12,6 +12,7 @@ type Mock struct {
 	ResponseCode int               `json:"response_code"`
 	ResponseBody string            `json:"response_body"`
 	Headers      map[string]string `json:"headers"`
+	DisableAuth  bool              `json:"disable_auth"`
 }
 
 //Wildcard returns all possible wildcards in a path

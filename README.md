@@ -92,6 +92,12 @@ Flags:
       "method": "POST",
       "response_code": 400,
       "response_body": "bad something"
+    },
+    {
+      "path": "/health",
+      "method": "GET",
+      "response_code": 200,
+      "disable_auth": true
     }
   ]
 }
@@ -136,6 +142,10 @@ Response code to return. The response code will be sent regardless of the payloa
 #### Response Body
 
 String representation of the response body. The response body will be sent regardless of header value. To send an empty body, keep this attribute as a blank string: `"response_body":""`.
+
+#### Disable Auth
+
+Boolean which can disable the authorization settings in the Authorization part of the configuration. A path with the `disable_auth` set to `true` will ignore the authorization configuration and respond if it's matched to a request. Default value is `false`.
 
 #### Headers
 

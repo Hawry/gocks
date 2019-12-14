@@ -13,8 +13,9 @@ import (
 var availableHandlers []http.HandlerFunc
 
 func createHandler(code int, body string, headers map[string]string, m settings.Mock, s settings.Settings) http.HandlerFunc {
+	log.Printf("debug: mock data %+v", m)
 	return func(w http.ResponseWriter, r *http.Request) {
-		if s.RequireAuthentication() {
+		if s.RequireAuthentication() && !m.DisableAuth {
 			u, p, _ := r.BasicAuth()
 			if !s.VerifyBasicAuth(u, p) && !s.VerifyHeaderAuth(r.Header) && !s.VerifyOpenIDAuth(r.Header) {
 				w.WriteHeader(http.StatusUnauthorized)
